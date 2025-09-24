@@ -17,7 +17,7 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 def create_access_token(subject: str):
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_EXPIRE_MINUTES) 
     to_encode = {"sub": subject, "exp": expire}
     return jwt.encode(to_encode, SECRET, algorithm=ALGO)
     
@@ -39,6 +39,7 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail='Not authenticated')
     payload = decode_token(token)
     sub = payload.get('sub')
+    # print(sub)
     if not sub:
         raise HTTPException(status_code=401, detail='Invalid token payload')
     db = SessionLocal()
@@ -46,4 +47,4 @@ def get_current_user(request: Request):
     db.close()
     if not user:
         raise HTTPException(status_code=401, detail='User not found')
-# return user
+    return user

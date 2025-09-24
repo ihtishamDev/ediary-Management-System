@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from .db import engine, Base
 from .auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth as auth_router, entries as entries_router, attachments as attachments_router
+from .routers import auth as auth_router, entries as entries_router
 
 # Create DB tables (dev convenience)
 Base.metadata.create_all(bind=engine)
@@ -13,8 +13,8 @@ app.add_middleware(CORSMiddleware, allow_origins=origins,
 allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 app.include_router(auth_router.router, prefix='/auth', tags=['auth'])
 app.include_router(entries_router.router, prefix='/entries', tags=['entries'])
-app.include_router(attachments_router.router, prefix='/attachments',
-tags=['attachments'])
+# app.include_router(attachments_router.router, prefix='/attachments',
+# tags=['attachments'])
 # small /me route
 from fastapi import Request
 from fastapi.responses import JSONResponse

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .db import Base
@@ -9,8 +9,19 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
+
+     # ✅ Email verification fields
+    is_verified = Column(Boolean, default=False)
+    verification_token = Column(String, nullable=True, index=True)
+    verification_token_expires = Column(DateTime, nullable=True)
+
+     # ✅ Password reset fields
+    reset_token = Column(String, nullable=True, index=True)       
+    reset_token_expires = Column(DateTime, nullable=True)   
+          
     created_at = Column(DateTime, server_default=func.now())
     entries = relationship('Entry', back_populates='owner')
+
 
 class Entry(Base):
     __tablename__ = 'entries'
@@ -18,19 +29,31 @@ class Entry(Base):
     owner_id = Column(Integer, ForeignKey('users.id'))
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
+    category = Column(Text, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(),
-    onupdate=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     owner = relationship('User', back_populates='entries')
-    attachments = relationship('Attachment', back_populates='entry')
+    # attachments = relationship('Attachment', back_populates='entry')
 
-class Attachment(Base):
-    __tablename__ = 'attachments'
+
+class Category(Base):
+    __tablename__='categories'
     id = Column(Integer, primary_key=True, index=True)
-    entry_id = Column(Integer, ForeignKey('entries.id'))
-    filename = Column(String, nullable=False) # original filename
-    stored_name = Column(String, nullable=False) # filename on disk
-    mime_type = Column(String, nullable=True)
-    size = Column(Integer, nullable=True)
+    owner_id = Column(Integer, ForeignKey('users.id'))
+    category = Column(String, nullable=False) 
+    status = Column(String, default="active")
     created_at = Column(DateTime, server_default=func.now())
-    entry = relationship('Entry', back_populates='attachments')
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+
+# class Attachment(Base):
+#     __tablename__ = 'attachments'
+#     id = Column(Integer, primary_key=True, index=True)
+#     entry_id = Column(Integer, ForeignKey('entries.id'))
+#     filename = Column(String, nullable=False) # original filename
+#     stored_name = Column(String, nullable=False) # filename on disk
+#     mime_type = Column(String, nullable=True)
+#     size = Column(Integer, nullable=True)
+#     created_at = Column(DateTime, server_default=func.now())
+#     entry = relationship('Entry', back_populates='attachments')

@@ -1,48 +1,114 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
+
+
+# ---------------- User Schemas ----------------
 
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
 
+
+class UserCreatelogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
 class UserOut(BaseModel):
     id: int
     name: str
     email: EmailStr
+    is_verified: bool            # ✅ add this field
     created_at: datetime
+
     class Config:
         from_attributes = True
 
+
+# ---------------- Token Schema ----------------
+
 class TokenOut(BaseModel):
     access_token: str
-    token_type: str = 'bearer'
+    token_type: str = "bearer"
+
+
+# ---------------- Entry Schemas ----------------
 
 class EntryCreate(BaseModel):
-    # id: int
-    title: str
-    content: str
-    # class Config:
-    #     from_attributes = True
+    title: Optional[str] = None
+    category: Optional[str] = None
+    content: Optional[str] = None
+    # status: Optional[Literal["active", "inactive"]] = "active"
+
 
 class EntryOut(BaseModel):
     id: int
     owner_id: int
     title: str
+    category: str
     content: str
+    # status: str   # 👈 new
     created_at: datetime
     updated_at: Optional[datetime]
+
     class Config:
         from_attributes = True
 
-class AttachmentOut(BaseModel):
-    id: int
-    entry_id: int
-    filename: str
-    stored_name: str
-    mime_type: Optional[str]
-    size: Optional[int]
+
+# ---------------- Category Schemas ----------------
+
+class categorySchema(BaseModel):
+    category: str
+    status: Optional[Literal["active", "inactive"]] = "active"
+
+
+class categoryOut(BaseModel):
+    id : int
+    owner_id: int
+    category: str
+    status: str
     created_at: datetime
+    updated_at: datetime
+
     class Config:
         from_attributes = True
+
+
+
+# ---------------- Attachment Schemas ----------------
+
+# class AttachmentOut(BaseModel):
+#     id: int
+#     entry_id: int
+#     filename: str
+#     stored_name: str
+#     mime_type: Optional[str]
+#     size: Optional[int]
+#     created_at: datetime
+
+#     class Config:
+#         from_attributes = True
+
+
+# ---------------- Forget / Reset Password ----------------
+
+class ForgetPassword(BaseModel):
+    """Request body for the 'forgot password' endpoint."""
+    email: EmailStr
+
+
+class ResetPassword(BaseModel):
+    """Request body for resetting the password."""
+    token: str
+    new_password: str
+    confirm_password: str
+
+# ---------------- Email Verification ----------------
+
+class VerifyEmailRequest(BaseModel):
+    token: str      # ✅ request body when user clicks link
+
+class VerifyEmailResponse(BaseModel):
+    message: str    # ✅
