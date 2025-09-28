@@ -9,7 +9,16 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None
 
 class UserCreatelogin(BaseModel):
     email: EmailStr
@@ -20,12 +29,19 @@ class UserOut(BaseModel):
     id: int
     name: str
     email: EmailStr
-    is_verified: bool            # ✅ add this field
+    is_verified: bool   
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    address: Optional[str] = None       # ✅ add this field
     created_at: datetime
 
     class Config:
         from_attributes = True
 
+class updatePassword(BaseModel):
+    old_password: str
+    new_password: str
+    # confirm_password : str
 
 # ---------------- Token Schema ----------------
 
@@ -76,22 +92,6 @@ class categoryOut(BaseModel):
         from_attributes = True
 
 
-
-# ---------------- Attachment Schemas ----------------
-
-# class AttachmentOut(BaseModel):
-#     id: int
-#     entry_id: int
-#     filename: str
-#     stored_name: str
-#     mime_type: Optional[str]
-#     size: Optional[int]
-#     created_at: datetime
-
-#     class Config:
-#         from_attributes = True
-
-
 # ---------------- Forget / Reset Password ----------------
 
 class ForgetPassword(BaseModel):
@@ -108,7 +108,23 @@ class ResetPassword(BaseModel):
 # ---------------- Email Verification ----------------
 
 class VerifyEmailRequest(BaseModel):
-    token: str      # ✅ request body when user clicks link
+    token: str      
 
 class VerifyEmailResponse(BaseModel):
-    message: str    # ✅
+    message: str    
+
+
+
+# ---------------- Attachment Schemas ----------------
+
+# class AttachmentOut(BaseModel):
+#     id: int
+#     entry_id: int
+#     filename: str
+#     stored_name: str
+#     mime_type: Optional[str]
+#     size: Optional[int]
+#     created_at: datetime
+
+#     class Config:
+#         from_attributes = True

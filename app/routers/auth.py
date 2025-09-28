@@ -4,9 +4,9 @@ from ..db import SessionLocal
 from ..utils import send_email
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from fastapi.responses import JSONResponse , HTMLResponse
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from ..auth import hash_password, verify_password, create_access_token
+from fastapi.responses import JSONResponse , HTMLResponse , RedirectResponse
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from ..auth import hash_password, verify_password, create_access_token , get_current_user
 from ..schemas import (
     UserCreate,
     UserOut,
@@ -14,6 +14,8 @@ from ..schemas import (
     ForgetPassword,
     ResetPassword,
     VerifyEmailRequest,
+    UserUpdate,
+    updatePassword,
 )
 
 router = APIRouter()
@@ -28,13 +30,14 @@ def register(payload: UserCreate, background: BackgroundTasks):
         raise HTTPException(status_code=400, detail='Email already registered')
 
     token = secrets.token_urlsafe(32)
-    
-
-
+  
     user = User(
         name=payload.name,
         email=payload.email,
         password_hash=hash_password(payload.password),
+        phone_number = payload.phone_number ,
+        gender = payload.gender,
+        address = payload.address,
         is_verified=False,
         verification_token=token,
         verification_token_expires=datetime.utcnow() + timedelta(hours=1)
@@ -53,10 +56,36 @@ def register(payload: UserCreate, background: BackgroundTasks):
         subject="Verify your email",
         body=f"Hi {user.name},\n\nPlease click the link to verify your account:\n{verify_link}\n\nThis link expires in 1 hour."
     )
-
     db.close()
     return UserOut.from_orm(user)
 
+
+
+
+@router.put("/changepassword" )
+def change_password(payload: updatePassword , current_user: User = Depends(get_current_user) ):
+    db = SessionLocal()
+    try: 
+        user = db.query(User).filter(User.id == current_user.id).first()
+    
+        if not user:
+            raise HTTPException(status_code=404 , detail="User not found")
+    
+        if not verify_password(payload.old_password , user.password_hash):
+            raise HTTPException(
+                status_code=404, detail="Old Password does not match"
+        )
+    
+        new_hashed_password  = hash_password(payload.new_password)
+        user.password_hash = new_hashed_password 
+        db.commit()
+
+        print("udpatepasswordudpatepassword" , {new_hashed_password })
+        print("udpatepasswordudpatepassword" , new_hashed_password )
+    
+        return new_hashed_password 
+    finally:
+        db.close()
 
 # ---------- Verify Email ----------
 @router.get("/verify")
@@ -65,55 +94,21 @@ def verify_email(token: str , response_class=HTMLResponse):
     try:
         user = db.query(User).filter(User.verification_token == token).first()
 
-        if not user or not user.verification_token_expires or user.verification_token_expires < datetime.utcnow():
-            raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+
+        if not user:
+            db.close()
+            return RedirectResponse (url="http://localhost:3000?msg=invalid_token")
+        
+        if user.verification_token_expires < datetime.utcnow():
+            return RedirectResponse (url="http://localhost:3000?msg=token_expire")
 
         user.is_verified = True
         user.verification_token = None
         user.verification_token_expires = None
         db.commit()
 
-         # 🎨 Styled HTML message
-        html_content = """
-        <html>
-            <head>
-                <title>Email Verification</title>
-                <style>
-                    body {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        background: #f4f7fa;
-                        font-family: Arial, sans-serif;
-                    }
-                    .message-box {
-                        text-align: center;
-                        background: white;
-                        padding: 30px 40px;
-                        border-radius: 12px;
-                        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
-                    }
-                    .message-box h2 {
-                        color: #2c3e50;
-                        margin-bottom: 15px;
-                    }
-                    .message-box p {
-                        font-size: 16px;
-                        color: #555;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="message-box">
-                    <h2>✅ Email Verified Successfully!</h2>
-                    <p>You can now login to your account.</p>
-                </div>
-            </body>
-        </html>
-        """
-        
-        return HTMLResponse(content=html_content, status_code=200)
+        return RedirectResponse(url="http://localhost:3000?msg=verified")
 
     finally:
         db.close()
@@ -141,6 +136,66 @@ def login(payload: UserCreatelogin):
     db.close()
     return res
 
+# ---------- Register Get Api ----------
+@router.get('/getuser')
+def get_user(current_user = Depends(get_current_user)  ):
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.id == current_user.id).order_by(User.created_at.desc()).all()
+    print("useruseruseruser" , user)
+
+    if not user:
+        raise HTTPException( 404 , "User not found" )
+    return user
+
+# ---------- Register update Api ----------
+
+@router.put("/updateuser" , response_model=UserOut )
+def update_user( payload:UserUpdate, background: BackgroundTasks , current_user= Depends(get_current_user) ):
+    db = SessionLocal()
+
+    user = db.query(User).filter(User.id == current_user.id).first()
+    print("udpateuserudpateuserudpateuser" , user)
+
+    if not user:
+        db.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if payload.name is not None:
+        user.name = payload.name
+    
+    if payload.address is not None:
+        user.address = payload.address
+
+    if payload.gender is not None:
+        user.gender = payload.gender
+    
+    if payload.phone_number is not None:
+        user.phone_number = payload.phone_number
+
+    if payload.email is not None:
+        user.email = payload.email
+        user.is_verified = False
+
+        token = secrets.token_urlsafe(32)
+        user.verification_token = token
+        user.verification_token_expires = datetime.utcnow() + timedelta(hours=1)
+
+        # verification link
+        verify_link = f"http://localhost:8000/auth/verify?token={token}"
+
+        # mail bhejna
+        background.add_task(
+            send_email,
+            to=user.email,
+            subject="Verify your new email",
+            body=f"Hi {user.name},\n\nPlease click the link to verify your new email:\n{verify_link}\n\nThis link expires in 1 hour."
+        )
+    db.commit()
+    db.refresh(user)
+    db.close()
+
+    return UserOut.from_orm(user)
 
 # ---------- Logout ----------
 @router.post('/logout')

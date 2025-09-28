@@ -9,7 +9,6 @@ import pytz
 
 router = APIRouter()
 
-
 # ---------------- post & get Category ----------------
 
 @router.post("/categoryName")
@@ -41,7 +40,7 @@ def category_create(payload: categorySchema , current_user=Depends(get_current_u
     finally:
         db.close()
     
-@router.get("getCategory")
+@router.get("/getCategory")
 def category_get( current_user = Depends(get_current_user)):
     db = SessionLocal()
 

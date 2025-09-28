@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from .db import engine, Base
 from .auth import get_current_user
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth as auth_router, entries as entries_router
+from .routers import auth as auth_router, entries as entries_router , attachments as attachments_router
+
 
 # Create DB tables (dev convenience)
 Base.metadata.create_all(bind=engine)

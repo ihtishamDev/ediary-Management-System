@@ -9,6 +9,9 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
+    phone_number = Column(String, nullable=True)
+    gender = Column(String, nullable=True)
+    address = Column(String, nullable=True)
 
      # ✅ Email verification fields
     is_verified = Column(Boolean, default=False)
