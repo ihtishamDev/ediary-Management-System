@@ -7,3 +7,4 @@ PyJWT
 python-multipart
 python-dotenv
 aiofiles
+email-validator
