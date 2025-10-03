@@ -2,25 +2,26 @@
 from email.mime.text import MIMEText
 import smtplib
 
-def send_email(to: str, subject: str, body: str):
-    """
-    Simple utility for sending emails.
-    For development it just prints the message.
-    Replace the print block with SMTP settings when ready.
-    """
-    # Development / testing: just show the message in console
-    # print(f"\n[DEV EMAIL] To: {to}\nSubject: {subject}\n\n{body}\n")
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USER = "shamijhn151@gmail.com"
+SMTP_PASS = "vlvk rxzs abzb gtyh"
 
-    # --- Example SMTP (commented out) ---
+def send_email(to: str, subject: str, body: str):
     msg = MIMEText(body)
     msg["Subject"] = subject
-    msg["From"] = "ahtishamjhn@gmail.com"
+    msg["From"] = SMTP_USER
     msg["To"] = to
     
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login("ahtishamjhn@gmail.com", "hzra jzzj yphq uxhh")
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()                     # ✅ TLS start
+            server.login(SMTP_USER, SMTP_PASS)    # ✅ Brevo login
+            server.send_message(msg)
+        print(f"✅ Email sent to {to}")
+    except Exception as e:
+        print(f"❌ Failed to send email to {to}: {e}")
+
 
 
 # from fastapi_mail import FastMail, MessageSchema, ConnectionConfig

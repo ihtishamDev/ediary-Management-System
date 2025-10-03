@@ -47,6 +47,8 @@ def register(payload: UserCreate, background: BackgroundTasks):
     db.refresh(user)
 
     # build verification link
+    # BASE_URL = "https://ediary-management-system-production.up.railway.app"
+
     verify_link = f"http://localhost:8000/auth/verify?token={token}"
 
     # send verification mail
