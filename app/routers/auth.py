@@ -1,7 +1,7 @@
 import secrets
 from ..models import User
 from ..db import SessionLocal
-from ..utils import send_email
+from app.utils import send_email  # your Resend function
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from fastapi.responses import JSONResponse , HTMLResponse , RedirectResponse
@@ -22,16 +22,61 @@ router = APIRouter()
 
 
 # ---------- Register ----------
-@router.post('/register', response_model=UserOut)
-def register(payload: UserCreate, background: BackgroundTasks):
-    db = SessionLocal()
-    if db.query(User).filter(User.email == payload.email).first():
-        db.close()
-        raise HTTPException(status_code=400, detail='Email already registered')
+# @router.post('/register', response_model=UserOut)
+# def register(payload: UserCreate, background: BackgroundTasks):
+#     db = SessionLocal()
+#     if db.query(User).filter(User.email == payload.email).first():
+#         db.close()
+#         raise HTTPException(status_code=400, detail='Email already registered')
 
-    token = secrets.token_urlsafe(32)
+#     token = secrets.token_urlsafe(32)
   
-    user = User(
+#     user = User(
+#         name=payload.name,
+#         email=payload.email,
+#         password_hash=hash_password(payload.password),
+#         phone_number = payload.phone_number ,
+#         gender = payload.gender,
+#         address = payload.address,
+#         is_verified=False,
+#         verification_token=token,
+#         verification_token_expires=datetime.utcnow() + timedelta(hours=1)
+#     )
+#     db.add(user)
+#     db.commit()
+#     db.refresh(user)
+
+#     # build verification link
+#     # BASE_URL = "https://ediary-management-system-production.up.railway.app"
+
+#     verify_link = f"http://localhost:8000/auth/verify?token={token}"
+
+#     # send verification mail
+#     background.add_task(
+#         send_email,
+#         to=user.email,
+#         subject="Verify your email",
+#         body=f"Hi {user.name},\n\nPlease click the link to verify your account:\n{verify_link}\n\nThis link expires in 1 hour."
+#     )
+#     db.close()
+#     return UserOut.from_orm(user)
+
+
+
+
+
+@router.post("/register")
+def register_user(payload: UserCreate):
+    db = SessionLocal()
+    try:
+        existing_user = db.query(User).filter(User.email == payload.email).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        token = secrets.token_urlsafe(32)
+        # expiry = datetime.utcnow() + timedelta(hours=1)
+
+        new_user = User(
         name=payload.name,
         email=payload.email,
         password_hash=hash_password(payload.password),
@@ -41,26 +86,31 @@ def register(payload: UserCreate, background: BackgroundTasks):
         is_verified=False,
         verification_token=token,
         verification_token_expires=datetime.utcnow() + timedelta(hours=1)
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+        )
+        db.add(new_user)
+        db.commit()
 
-    # build verification link
-    # BASE_URL = "https://ediary-management-system-production.up.railway.app"
+        verify_link = f"https://ediary-management-system-production.up.railway.app/verify?token={token}"
 
-    verify_link = f"http://localhost:8000/auth/verify?token={token}"
+        subject = "Verify Your Email - Shami App"
+        body = f"""
+        <h2>Welcome!</h2>
+        <p>Click the link below to verify your email:</p>
+        <a href="{verify_link}" target="_blank">Verify Email</a>
+        <br><br>
+        <small>This link will expire in 1 hour.</small>
+        """
 
-    # send verification mail
-    background.add_task(
-        send_email,
-        to=user.email,
-        subject="Verify your email",
-        body=f"Hi {user.name},\n\nPlease click the link to verify your account:\n{verify_link}\n\nThis link expires in 1 hour."
-    )
-    db.close()
-    return UserOut.from_orm(user)
+        send_email(to=payload.email, subject=subject, body=body)
 
+        return {"msg": "User registered successfully. Verification email sent!"}
+
+    except Exception as e:
+        print("❌ Error in register:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        db.close()
 
 
 
