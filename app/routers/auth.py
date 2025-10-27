@@ -21,57 +21,6 @@ from ..schemas import (
 
 router = APIRouter()
 
-
-# ---------- Register ----------
-# @router.post('/register', response_model=UserOut)
-# def register(payload: UserCreate, background: BackgroundTasks):
-#     db = SessionLocal()
-#     if db.query(User).filter(User.email == payload.email).first():
-#         db.close()
-#         raise HTTPException(status_code=400, detail='Email already registered')
-
-#     token = secrets.token_urlsafe(32)
-  
-#     user = User(
-#         name=payload.name,
-#         email=payload.email,
-#         password_hash=hash_password(payload.password),
-#         phone_number = payload.phone_number ,
-#         gender = payload.gender,
-#         address = payload.address,
-#         is_verified=False,
-#         verification_token=token,
-#         verification_token_expires=datetime.utcnow() + timedelta(hours=1)
-#     )
-#     db.add(user)
-#     db.commit()
-#     db.refresh(user)
-
-#     # build verification link
-#     # BASE_URL = "https://ediary-management-system-production.up.railway.app"
-
-#     verify_link = f"http://localhost:8000/auth/verify?token={token}"
-
-#     # send verification mail
-#     background.add_task(
-#         send_email,
-#         to=user.email,
-#         subject="Verify your email",
-#         body=f"Hi {user.name},\n\nPlease click the link to verify your account:\n{verify_link}\n\nThis link expires in 1 hour."
-#     )
-#     db.close()
-#     return UserOut.from_orm(user)
-
-
-@router.get("/test-email")
-def test_email():
-    subject = "Test Email"
-    body = "This is a test email from your FastAPI application."
-    send_email("recipient@example.com", subject, body)  # Replace with your email
-    return {"message": "Test email sent"}
-
-
-
 @router.post("/register")
 def register_user(payload: UserCreate, background: BackgroundTasks):
     db = SessionLocal()
@@ -129,6 +78,12 @@ def register_user(payload: UserCreate, background: BackgroundTasks):
     finally:
         db.close()
  
+@router.get("/test-email")
+def test_email():
+    subject = "Test Email"
+    body = "This is a test email from your FastAPI application."
+    send_email("recipient@example.com", subject, body)  # Replace with your email
+    return {"message": "Test email sent"}
 
 
 
