@@ -25,28 +25,3 @@ def send_email(to, subject, body):
         print(f"❌ Email failed: {e}")
         return False
 
-
-# from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-# from pydantic import EmailStr
-# from typing import List
-
-# conf = ConnectionConfig(
-#     MAIL_USERNAME="ahtishamjhn@gmail.com",
-#     MAIL_PASSWORD="hzra jzzj yphq uxhh",
-#     MAIL_FROM="ahtishamjhn@gmail.com",
-#     MAIL_PORT=587,
-#     MAIL_SERVER="smtp.gmail.com",
-#     MAIL_TLS=True,
-#     MAIL_SSL=False,
-#     USE_CREDENTIALS=True
-# )
-
-# async def send_email(to: EmailStr, subject: str, body: str):
-#     fm = FastMail(conf)
-#     message = MessageSchema(
-#         subject=subject,
-#         recipients=[to],
-#         body=body,
-#         subtype="plain"
-#     )
-#     await fm.send_message(message)
