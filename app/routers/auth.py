@@ -71,6 +71,7 @@ def test_email():
     return {"message": "Test email sent"}
 
 
+
 @router.post("/register")
 def register_user(payload: UserCreate, background: BackgroundTasks):
     db = SessionLocal()
@@ -127,7 +128,7 @@ def register_user(payload: UserCreate, background: BackgroundTasks):
 
     finally:
         db.close()
-
+ 
 
 
 
