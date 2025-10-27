@@ -85,8 +85,6 @@ def test_email():
     send_email("recipient@example.com", subject, body)  # Replace with your email
     return {"message": "Test email sent"}
 
-
-
 # ---------- Verify Email ----------
 @router.get("/verify")
 def verify_email(token: str, response_class=HTMLResponse):
