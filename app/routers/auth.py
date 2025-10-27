@@ -1,3 +1,4 @@
+import os
 import secrets
 from ..models import User
 from ..db import SessionLocal
@@ -66,7 +67,7 @@ router = APIRouter()
 
 
 @router.post("/register")
-def register_user(payload: UserCreate):
+def register_user(payload: UserCreate, background: BackgroundTasks):
     db = SessionLocal()
     try:
         existing_user = db.query(User).filter(User.email == payload.email).first()
@@ -89,9 +90,13 @@ def register_user(payload: UserCreate):
         )
         db.add(new_user)
         db.commit()
+        db.refresh(new_user)
+
 
         # verify_link = f"https://ediary-management-system-production.up.railway.app/verify?token={token}"
-        verify_link = f"http://localhost:8000/auth/verify?token={token}"
+        # verify_link = f"https://web-production-1cafa.up.railway.app/auth/verify?token={token}"
+        backend_base = os.getenv("BACKEND_URL", "http://localhost:8000")
+        verify_link = f"{backend_base}/auth/verify?token={token}"
 
         
 
@@ -104,9 +109,10 @@ def register_user(payload: UserCreate):
         <small>This link will expire in 1 hour.</small>
         """
 
-        send_email(to=payload.email, subject=subject, body=body)
+        # queue email sending in background (non-blocking)
+        background.add_task(send_email, payload.email, subject, body)
 
-        return {"msg": "User registered successfully. Verification email sent!"}
+        return {"msg": "User registered successfully. Verification email queued."}
 
     except Exception as e:
         print("❌ Error in register:", e)
@@ -115,6 +121,37 @@ def register_user(payload: UserCreate):
     finally:
         db.close()
 
+
+
+
+# ---------- Verify Email ----------
+@router.get("/verify")
+def verify_email(token: str, response_class=HTMLResponse):
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.verification_token == token).first()
+
+
+
+        if not user:
+            db.close()
+            frontend_base = os.getenv("FRONTEND_URL", "http://localhost:3000")
+            return RedirectResponse(url=f"{frontend_base}?msg=invalid_token")
+
+        if user.verification_token_expires < datetime.utcnow():
+            frontend_base = os.getenv("FRONTEND_URL", "http://localhost:3000")
+            return RedirectResponse(url=f"{frontend_base}?msg=token_expire")
+
+        user.is_verified = True
+        user.verification_token = None
+        user.verification_token_expires = None
+        db.commit()
+
+        frontend_base = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        return RedirectResponse(url=f"{frontend_base}?msg=verified")
+
+    finally:
+        db.close()
 
 
 @router.put("/changepassword" )
@@ -141,33 +178,6 @@ def change_password(payload: updatePassword , current_user: User = Depends(get_c
         return new_hashed_password 
     finally:
         db.close()
-
-# ---------- Verify Email ----------
-@router.get("/verify")
-def verify_email(token: str , response_class=HTMLResponse):
-    db = SessionLocal()
-    try:
-        user = db.query(User).filter(User.verification_token == token).first()
-
-
-
-        if not user:
-            db.close()
-            return RedirectResponse (url="http://localhost:3000?msg=invalid_token")
-        
-        if user.verification_token_expires < datetime.utcnow():
-            return RedirectResponse (url="http://localhost:3000?msg=token_expire")
-
-        user.is_verified = True
-        user.verification_token = None
-        user.verification_token_expires = None
-        db.commit()
-
-        return RedirectResponse(url="http://localhost:3000?msg=verified")
-
-    finally:
-        db.close()
-
 
 # ---------- Login ----------
 
