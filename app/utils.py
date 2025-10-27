@@ -30,7 +30,10 @@ import os
 import logging
 import smtplib
 from email.mime.text import MIMEText
-from typing import Any
+from dotenv import load_dotenv  # Import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +43,13 @@ def send_email(to: str, subject: str, body: str) -> bool:
     SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASS.
     Returns True on success, False on failure (and logs the error).
     """
-    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_SERVER = os.getenv("SMTP_SERVER")
     SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-    SMTP_USER = os.getenv("shamijhn151@gmail.com")
-    SMTP_PASS = os.getenv("ffyl vrvw iqmi zmeu")
+    SMTP_USER = os.getenv("SMTP_USER")
+    SMTP_PASS = os.getenv("SMTP_PASS")
 
     if not SMTP_USER or not SMTP_PASS:
-        logger.error("SMTP_USER or SMTP_PASS not set in environment")
+        print("SMTP_USER or SMTP_PASS not set in environment")
         return False
 
     msg = MIMEText(body, "html")
@@ -56,14 +59,14 @@ def send_email(to: str, subject: str, body: str) -> bool:
 
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
-            server.ehlo()
+            # server.ehlo()
             server.starttls()
-            server.ehlo()
+            # server.ehlo()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
-        logger.info("✅ Email sent successfully to %s", to)
+        print("✅ Email sent successfully to %s", {to})
         return True
-    except Exception as e:  # pragma: no cover
-        logger.exception("❌ Email failed to %s: %s", to, e)
+    except Exception as e:
+        print(f"❌ Email failed to {to}: {e}")
         return False
 # ...existing code...

@@ -63,7 +63,12 @@ router = APIRouter()
 #     return UserOut.from_orm(user)
 
 
-
+@router.get("/test-email")
+def test_email():
+    subject = "Test Email"
+    body = "This is a test email from your FastAPI application."
+    send_email("recipient@example.com", subject, body)  # Replace with your email
+    return {"message": "Test email sent"}
 
 
 @router.post("/register")
@@ -76,11 +81,13 @@ def register_user(payload: UserCreate, background: BackgroundTasks):
 
         token = secrets.token_urlsafe(32)
         # expiry = datetime.utcnow() + timedelta(hours=1)
-
+        password_Hash = hash_password(payload.password[:72])
+        print("🔒 Generated Password Hash:", password_Hash)        
+        
         new_user = User(
         name=payload.name,
         email=payload.email,
-        password_hash=hash_password(payload.password),
+        password_hash=password_Hash,
         phone_number = payload.phone_number ,
         gender = payload.gender,
         address = payload.address,

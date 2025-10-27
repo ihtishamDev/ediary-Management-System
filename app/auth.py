@@ -5,27 +5,33 @@ import os
 from fastapi import HTTPException, Request
 from .db import SessionLocal
 from .models import User
+
 SECRET = os.getenv('JWT_SECRET', 'dev-secret-change-me')
 ALGO = 'HS256'
 ACCESS_EXPIRE_MINUTES = 60
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
+def _truncate_to_72_bytes(s: str) -> str:
+    b = s.encode('utf-8')
+    if len(b) > 72:
+        b = b[:72]                    # truncate bytes
+        return b.decode('utf-8', 'ignore')  # drop any broken tail
+    return s
+
 def hash_password(password: str) -> str:
-    # bcrypt only supports up to 72 bytes
-    if len(password.encode('utf-8')) > 72:
-        password = password[:72]
-    return pwd_context.hash(password)
-    
+    pwd = _truncate_to_72_bytes(password)
+    return pwd_context.hash(pwd)
+
 def verify_password(plain: str, hashed: str) -> bool:
-    if len(plain.encode('utf-8')) > 72:
-        plain = plain[:72]
-    return pwd_context.verify(plain, hashed)
+    plain_trunc = _truncate_to_72_bytes(plain)
+    return pwd_context.verify(plain_trunc, hashed)
+
 
 def create_access_token(subject: str):
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_EXPIRE_MINUTES) 
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_EXPIRE_MINUTES)
     to_encode = {"sub": subject, "exp": expire}
     return jwt.encode(to_encode, SECRET, algorithm=ALGO)
-    
+
 def decode_token(token: str) -> dict:
     try:
         data = jwt.decode(token, SECRET, algorithms=[ALGO])
@@ -34,8 +40,7 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail='Token expired')
     except Exception:
         raise HTTPException(status_code=401, detail='Invalid token')
-    
-# dependency to get current user from cookie
+
 from fastapi import Depends
 
 def get_current_user(request: Request):
@@ -44,7 +49,6 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail='Not authenticated')
     payload = decode_token(token)
     sub = payload.get('sub')
-    # print(sub)
     if not sub:
         raise HTTPException(status_code=401, detail='Invalid token payload')
     db = SessionLocal()
