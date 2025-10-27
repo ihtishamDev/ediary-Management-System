@@ -90,7 +90,10 @@ def register_user(payload: UserCreate):
         db.add(new_user)
         db.commit()
 
-        verify_link = f"https://ediary-management-system-production.up.railway.app/verify?token={token}"
+        # verify_link = f"https://ediary-management-system-production.up.railway.app/verify?token={token}"
+        verify_link = f"http://localhost:8000/auth/verify?token={token}"
+
+        
 
         subject = "Verify Your Email - Shami App"
         body = f"""

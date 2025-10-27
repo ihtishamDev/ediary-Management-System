@@ -26,25 +26,6 @@ def send_email(to, subject, body):
         return False
 
 
-
-
-# def send_email(to: str, subject: str, body: str):
-#     msg = MIMEText(body)
-#     msg["Subject"] = subject
-#     msg["From"] = SMTP_USER
-#     msg["To"] = to
-    
-#     try:
-#         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-#             server.starttls()                     # ✅ TLS start
-#             server.login(SMTP_USER, SMTP_PASS)    # ✅ Brevo login
-#             server.send_message(msg)
-#         print(f"✅ Email sent to {to}")
-#     except Exception as e:
-#         print(f"❌ Failed to send email to {to}: {e}")
-
-
-
 # from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 # from pydantic import EmailStr
 # from typing import List
