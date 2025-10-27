@@ -5,7 +5,6 @@ from ..schemas import EntryCreate, EntryOut,categorySchema,categoryOut
 from ..auth import get_current_user
 from zoneinfo import ZoneInfo
 from datetime import datetime
-import pytz
 
 router = APIRouter()
 
