@@ -52,7 +52,7 @@ def register_user(payload: UserCreate, background: BackgroundTasks):
 
         # verify_link = f"https://ediary-management-system-production.up.railway.app/verify?token={token}"
         # verify_link = f"https://web-production-1cafa.up.railway.app/auth/verify?token={token}"
-        backend_base = os.getenv("BACKEND_URL", "http://localhost:8000")
+        backend_base = os.getenv("BACKEND_URL", "https://ediary-management-system-production-ed2f.up.railway.app")
         verify_link = f"{backend_base}/auth/verify?token={token}"
 
         
