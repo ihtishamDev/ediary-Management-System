@@ -80,10 +80,10 @@ def register_user(payload: UserCreate, background: BackgroundTasks):
  
 @router.get("/test-email")
 def test_email():
-    subject = "Test Email"
-    body = "This is a test email from your FastAPI application."
-    send_email("recipient@example.com", subject, body)  # Replace with your email
-    return {"message": "Test email sent"}
+    subject = "Welcome to Shami App 🚀"
+    body = "<h1>Resend Integration Working!</h1><p>You just sent this using FastAPI + Resend 🎉</p>"
+    send_email("shamijhn151@gmail.com", subject, body)
+    return {"msg": "Email sent successfully"}
 
 # ---------- Verify Email ----------
 @router.get("/verify")
