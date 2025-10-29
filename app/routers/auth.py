@@ -129,7 +129,7 @@ def change_password(payload: updatePassword , current_user: User = Depends(get_c
                 status_code=404, detail="Old Password does not match"
         )
 
-        password_Hash = hash_password(payload.password[:72])
+        password_Hash = hash_password(payload.new_password[:72])
         print("🔒 Generated Password Hash:", password_Hash)
     
         new_hashed_password  = password_Hash
