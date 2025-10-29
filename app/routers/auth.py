@@ -186,6 +186,12 @@ def update_user( payload:UserUpdate, background: BackgroundTasks , current_user=
     user = db.query(User).filter(User.id == current_user.id).first()
     print("udpateuserudpateuserudpateuser" , user)
 
+    if payload.email and payload.email != current_user.email:
+            raise HTTPException(
+                status_code=400,
+                detail="You cannot change your email address."
+            )
+
     if not user:
         db.close()
         raise HTTPException(status_code=404, detail="User not found")
@@ -202,24 +208,24 @@ def update_user( payload:UserUpdate, background: BackgroundTasks , current_user=
     if payload.phone_number is not None:
         user.phone_number = payload.phone_number
 
-    if payload.email is not None:
-        user.email = payload.email
-        user.is_verified = False
+    # if payload.email is not None:
+    #     user.email = payload.email
+    #     user.is_verified = False
 
-        token = secrets.token_urlsafe(32)
-        user.verification_token = token
-        user.verification_token_expires = datetime.utcnow() + timedelta(hours=1)
+        # token = secrets.token_urlsafe(32)
+        # user.verification_token = token
+        # user.verification_token_expires = datetime.utcnow() + timedelta(hours=1)
 
-        # verification link
-        verify_link = f"http://localhost:8000/auth/verify?token={token}"
+        # # verification link
+        # verify_link = f"http://localhost:8000/auth/verify?token={token}"
 
-        # mail bhejna
-        background.add_task(
-            send_email,
-            to=user.email,
-            subject="Verify your new email",
-            body=f"Hi {user.name},\n\nPlease click the link to verify your new email:\n{verify_link}\n\nThis link expires in 1 hour."
-        )
+        # # mail bhejna
+        # background.add_task(
+        #     send_email,
+        #     to=user.email,
+        #     subject="Verify your new email",
+        #     body=f"Hi {user.name},\n\nPlease click the link to verify your new email:\n{verify_link}\n\nThis link expires in 1 hour."
+        # )
     db.commit()
     db.refresh(user)
     db.close()
