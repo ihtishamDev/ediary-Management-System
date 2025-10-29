@@ -277,10 +277,13 @@ def reset_password(payload: ResetPassword):
         if not user or user.reset_token_expires is None or user.reset_token_expires < datetime.utcnow():
             raise HTTPException(status_code=400, detail="Invalid or expired token")
 
-        if payload.new_password != payload.confirm_password:
-            raise HTTPException(status_code=400, detail="Passwords do not match")
+        # if payload.new_password != payload.confirm_password:
+        #     raise HTTPException(status_code=400, detail="Passwords do not match")
 
-        user.password_hash = hash_password(payload.new_password)
+        password_Hash = hash_password(payload.password[:72])
+        print("🔒 Generated Password Hash:", password_Hash)
+
+        user.password_hash = password_Hash
         user.reset_token = None
         user.reset_token_expires = None
 

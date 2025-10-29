@@ -102,8 +102,8 @@ class ForgetPassword(BaseModel):
 class ResetPassword(BaseModel):
     """Request body for resetting the password."""
     token: str
-    new_password: str
-    confirm_password: str
+    password: str
+    
 
 # ---------------- Email Verification ----------------
 
