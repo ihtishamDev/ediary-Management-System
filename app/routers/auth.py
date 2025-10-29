@@ -280,10 +280,7 @@ def reset_password(payload: ResetPassword):
         # if payload.new_password != payload.confirm_password:
         #     raise HTTPException(status_code=400, detail="Passwords do not match")
 
-        password_Hash = hash_password(payload.password[:72])
-        print("🔒 Generated Password Hash:", password_Hash)
-
-        user.password_hash = password_Hash
+        user.password_hash = hash_password(payload.new_password)
         user.reset_token = None
         user.reset_token_expires = None
 
