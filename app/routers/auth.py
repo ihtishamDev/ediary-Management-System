@@ -255,7 +255,7 @@ def forget_password(payload: ForgetPassword, background: BackgroundTasks):
     user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
     db.commit()
 
-    reset_link = f"http://localhost:3000/reset_password?token={token}"
+    reset_link = f"http://localhost:3000/reset_password?token=${token}"
 
     background.add_task(
         send_email,
