@@ -20,6 +20,11 @@ app.include_router(entries_router.router, prefix='/entries', tags=['entries'])
 # app.include_router(attachments_router.router, prefix='/attachments',
 # tags=['attachments'])
 # small /me route
+
+
+
+
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 @app.get('/auth/me')
