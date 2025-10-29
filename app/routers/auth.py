@@ -157,7 +157,7 @@ def login(payload: UserCreatelogin):
 
     token = create_access_token(user.email)
     res = JSONResponse({"msg": "ok"})
-    res.set_cookie('access_token', token, httponly=True, samesite='lax')
+    res.set_cookie('access_token', value=token, httponly=True, samesite='none' , secure=True)
     print("access_token is here", token)
     db.close()
     return res
