@@ -162,7 +162,7 @@ def create_entry(payload: EntryCreate, current_user=Depends(get_current_user)):
         db.close()
 
 # ------ List Entries -----
-@router.get("")
+@router.get("/")
 def list_entries(current_user=Depends(get_current_user)):
 
     db = SessionLocal()
