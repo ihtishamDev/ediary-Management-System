@@ -12,9 +12,24 @@ load_dotenv()
 # Create DB tables (dev convenience)
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title='E-Diary API')
-origins = ["http://localhost:3000" , "https://ediary-management-system-production-ed2f.up.railway.app"]
-app.add_middleware(CORSMiddleware, allow_origins=origins, 
-allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
+# origins = ["https://e-diary-management-system-frontend-nine.vercel.app" , "https://ediary-management-system-production-ed2f.up.railway.app"]
+# app.add_middleware(CORSMiddleware, allow_origins=origins, 
+# allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
+
+origins = [
+    "https://e-diary-management-system-frontend-nine.vercel.app",
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.include_router(auth_router.router, prefix='/auth', tags=['auth'])
 app.include_router(entries_router.router, prefix='/entries', tags=['entries'])
 # app.include_router(attachments_router.router, prefix='/attachments',
