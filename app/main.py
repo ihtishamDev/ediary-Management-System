@@ -19,7 +19,7 @@ app = FastAPI(title='E-Diary API')
 origins = [
     "https://e-diary-management-system-frontend-nine.vercel.app",
     "http://localhost:3000"
-]
+]  
 
 app.add_middleware(
     CORSMiddleware,
